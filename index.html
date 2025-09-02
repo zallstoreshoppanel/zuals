@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:#1e0f3f;color:#fff;display:flex;flex-direction:column;align-items:center;padding:20px;}
+h1{margin-bottom:20px;}
+.panel-box{background: rgba(255,255,255,0.05);padding:20px;border-radius:15px;margin-bottom:20px;width:320px;}
+input, select, button{width:100%;padding:10px;margin:10px 0;border-radius:8px;border:none;outline:none;}
+button{background:#7a3ff2;color:#fff;font-weight:bold;cursor:pointer;transition:0.3s;}
+button:hover{transform:scale(1.05);}
+#popup{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:linear-gradient(45deg,#7a3ff2,#9c5fff);padding:15px 30px;border-radius:12px;color:#fff;font-weight:bold;font-size:16px;z-index:9999;opacity:0;pointer-events:none;}
+#popup.show{opacity:1;transition:0.3s;}
+</style>
+</head>
+<body>
+
+<h1>Admin Panel</h1>
+
+<div class="panel-box">
+  <h3>Buat Password Baru</h3>
+  <input type="text" id="newPW" placeholder="Masukkan password baru">
+  <select id="maxDevice">
+    <option value="1">Max Device: 1</option>
+    <option value="2">Max Device: 2</option>
+    <option value="3">Max Device: 3</option>
+    <option value="4">Max Device: 4</option>
+    <option value="5">Max Device: 5</option>
+  </select>
+  <button onclick="createPW()">Buat Password</button>
+</div>
+
+<div class="panel-box">
+  <h3>Hapus Password / Reset Device</h3>
+  <button onclick="deletePW()">Hapus Password</button>
+</div>
+
+<div class="panel-box">
+  <h3>Device Login Saat Ini</h3>
+  <ul id="deviceList"></ul>
+</div>
+
+<div id="popup"></div>
+
+<script>
+// Popup Modern
+function showPopup(message){
+  const popup=document.getElementById('popup');
+  popup.textContent=message;
+  popup.classList.add('show');
+  setTimeout(()=>{popup.classList.remove('show');},3000);
+}
+
+// Generate DeviceID untuk index.html
+function getDeviceID(){
+  let did = localStorage.getItem('deviceID');
+  if(!did){
+    did='device-'+Math.floor(Math.random()*100000);
+    localStorage.setItem('deviceID', did);
+  }
+  return did;
+}
+getDeviceID(); // buat jika belum ada
+
+// Create Password
+function createPW(){
+  const pw=document.getElementById('newPW').value.trim();
+  const maxD=parseInt(document.getElementById('maxDevice').value);
+  if(pw===''){showPopup('❌ Password kosong!'); return;}
+  localStorage.setItem('sitePW', pw);
+  localStorage.setItem('maxDevices', maxD);
+  localStorage.setItem('devices', JSON.stringify([])); // reset login device
+  updateDeviceList();
+  showPopup('✅ Password berhasil dibuat!');
+}
+
+// Delete Password
+function deletePW(){
+  localStorage.removeItem('sitePW');
+  localStorage.removeItem('maxDevices');
+  localStorage.removeItem('devices');
+  updateDeviceList();
+  showPopup('✅ Password dan devices dihapus!');
+}
+
+// Update Device List
+function updateDeviceList(){
+  const ul=document.getElementById('deviceList');
+  ul.innerHTML='';
+  const devices=JSON.parse(localStorage.getItem('devices') || '[]');
+  if(devices.length===0){
+    const li=document.createElement('li');
+    li.textContent='Belum ada device login';
+    ul.appendChild(li);
+  }else{
+    devices.forEach((d,i)=>{
+      const li=document.createElement('li');
+      li.textContent=`Device ${i+1}: ${d}`;
+      ul.appendChild(li);
+    });
+  }
+}
+
+updateDeviceList();
+</script>
+
+</body>
+</html>
